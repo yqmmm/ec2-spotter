@@ -1,7 +1,7 @@
 # settings
-export name="fast-ai"
+export name="a"
 export keyName="aws-key-$name"
-export maxPricePerHour=0.5
+export maxPricePerHour=0.9
 
 # Set current dir to working dir - http://stackoverflow.com/a/10348989/277871
 cd "$(dirname ${BASH_SOURCE[0]})"

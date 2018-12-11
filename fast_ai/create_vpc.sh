@@ -1,8 +1,9 @@
 # settings
-export name="fast-ai"
+export name="a"
 export cidr="0.0.0.0/0"
 # change to availability zone of your choice
-export availability_zone="us-east-1a"
+export availability_zone="ap-southeast-1a"
+#export availability_zones=("us-west-2a" "us-west-2b" "us-west-2c")
 
 hash aws 2>/dev/null
 if [ $? -ne 0 ]; then

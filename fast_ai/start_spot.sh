@@ -17,6 +17,9 @@ export instance_id=`aws ec2 describe-spot-instance-requests --spot-instance-requ
 echo Waiting for spot instance to start up...
 aws ec2 wait instance-running --instance-ids $instance_id
 
+echo Waiting for spot instance to swap volume...
+aws ec2 wait volume-in-use --filters Name=tag:Name,Values=a-volume
+
 echo Spot instance ID: $instance_id 
 
 echo 'Please allow the root volume swap script a few minutes to finish.'

@@ -1,6 +1,6 @@
 # Parameters defaults
 # The size of the root volume, in GB.
-volume_size=128
+volume_size=75
 # The name of the key file we'll use to log into the instance. create_vpc.sh sets it to aws-key-fast-ai
 name=a
 key_name=aws-key-$name
@@ -9,11 +9,26 @@ ec2spotter_instance_type=p2.xlarge
 # In USD, the maximum price we are willing to pay.
 bid_price=0.9
 
-ami=ami-0403080dacdf781b0
+# #Seoul
+# ami=ami-0403080dacdf781b0
+# subnetId=subnet-076e48a7bc0d0a7dd
+# securityGroupId=sg-053ed6db813de9513
+# key_name=korea
+# volume_id=vol-0a57c0c0810c1f356
 
-subnetId=subnet-076e48a7bc0d0a7dd
+#Tokyo
+ami=ami-0cae2c2d7c4ae9e5a
+subnetId=subnet-062e14c0441665372
+securityGroupId=sg-0062113ca6228a0c3
+key_name=tokyo
+volume_id=vol-0462ee8631bf8ff45
 
-securityGroupId=sg-053ed6db813de9513
+# #Singapore
+# ami=ami-01ce8149d2e4ae3d5
+# subnetId=subnet-0218004f9e93f57b9
+# securityGroupId=sg-08f1a8956821d8135
+# key_name=singapore
+# volume_id=vol-08c5f9a09c0f514d1
 
 
 # Read the input args
@@ -41,7 +56,7 @@ case $key in
 	key_name="$2"
 	shift # pass argument
 	;;
-	--ec2spotter_instance_type)
+	--type)
 	ec2spotter_instance_type="$2"
 	shift # pass argument
 	;;
@@ -58,14 +73,16 @@ done
 
 cat >user-data.tmp <<EOF
 #!/bin/sh
-cd
+cd /home/ubuntu
+mkdir workspace
 git clone https://github.com/gpakosz/.tmux.git
 ln -s -f .tmux/.tmux.conf
 cp .tmux/.tmux.conf.local .
+su ubuntu
+sudo apt install htop
 EOF
 
 userData=$(base64 user-data.tmp | tr -d '\n');
-
 
 # Create a config file to launch the instance.
 cat >specs.tmp <<EOF 
@@ -78,7 +95,7 @@ cat >specs.tmp <<EOF
     {
       "DeviceName": "/dev/sda1",
       "Ebs": {
-        "DeleteOnTermination": false, 
+        "DeleteOnTermination": true, 
         "VolumeType": "gp2",
         "VolumeSize": $volume_size 
       }
@@ -117,6 +134,9 @@ aws ec2 create-tags --resources $instance_id --tags --tags Key=Name,Value=$name-
 export instance_ip=`aws ec2 describe-instances --instance-ids $instance_id --filter Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].PublicIpAddress" --output=text`
 
 echo Spot Instance IP: $instance_ip
+
+# Attach volume
+aws ec2 attach-volume --volume-id $volume_id --instance-id $instance_id --device /dev/sdf || exit -1
 
 # Clean up
 rm specs.tmp
